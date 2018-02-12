@@ -65,10 +65,10 @@ def cky_algorithm(sentence):
     cky = CKY_table(sentence)
     
     # words to PoS (row 1)
-    for word_idx in range(sentence_len):
-        for symbol in lexicon[sentence[word_idx]]:
-            trace_text = '[' + symbol + ' ' + sentence[word_idx] + ']'
-            cky.add_symbol(1, word_idx, symbol, trace_text)
+    for w in range(sentence_len):
+        for symbol in lexicon[sentence[w]]:
+            trace_text = '[' + symbol + ' ' + sentence[w] + ']'
+            cky.add_symbol(1, w, symbol, trace_text)
     print
     print 'ROW 1: PARTS OF SPEECH'
     cky.printout()
