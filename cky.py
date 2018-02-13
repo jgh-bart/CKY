@@ -15,6 +15,9 @@ class CKY_rule:
         print self.left.ljust(3), "->", self.right
 
 class CKY_table:
+    # CKY table with cells stored dictionary, keys (i,j)
+    # i: span length, j: index of span start
+    # each cell holding a (by default empty) list of CKY traces
     def __init__(self, sentence):
         self.sentence = sentence
         self.len   = len(self.sentence)
@@ -43,6 +46,8 @@ class CKY_table:
         print 'SEN ', sentence_print
 
 class CKY_trace:
+    # trace object stored in CKY table,
+    # with symbol and parse trace attributes, both strings
     def __init__(self, symbol, trace_text):
         self.symbol     = symbol
         self.trace_text = trace_text
