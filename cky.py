@@ -1,7 +1,9 @@
 class CKY_rule:
+    # rule object, initiated with LHS symbol as string
+    # and RHS symbols as list
     def __init__(self, left, right):
         self.left  = left
-        self.right = right.split()
+        self.right = right
     
     def rule_match(self, symbol_list):
         if symbol_list == self.right:
@@ -46,12 +48,30 @@ class CKY_trace:
         self.trace_text = trace_text
 
 # list of rewrite rules
-rules_string = 'S->NP VP; VP->VP PP; VP->V NP; PP->P NP; NP->Det N; NP->NP PP'
-rules = [CKY_rule(rule[:rule.find('->')],
-                  rule[rule.find('->') + 2:]) for rule in rules_string.split('; ')]
+rules_string = 'S->NP VP; VP->VP PP; VP->V NP; PP->P NP; NP->Det N; NP->NP PP; VP->V NP PP'
+rules = set([CKY_rule(rule[:rule.find('->')],
+                  rule[rule.find('->') + 2:].split()) for rule in rules_string.split('; ')])
 print 'RULES'
 for rule in rules:
     rule.printout()
+
+# rewrite rules not in Chomsky Normal Form (more than 2 terms on RHS)
+for rule in rules:
+    if len(rule.right) > 2:
+        idx = 0
+        while len(rule.right) > 2:
+            new_symbol = 'x' + str(idx)
+            rule_1 = CKY_rule(rule.left, [rule.right[0], new_symbol])
+            rule_2 = CKY_rule(new_symbol, rule.right[1:])
+            rules.add(rule_1)
+            rules.add(rule_2)
+            rules.remove(rule)
+            rule = rule_2
+            idx  += 1
+print 'RULES (C.N.F.)'
+for rule in rules:
+    rule.printout()
+
 
 lexicon = {'she': ['NP'],
            'eats': ['V', 'VP'],
@@ -85,7 +105,10 @@ def cky_algorithm(sentence):
                                 print
                                 rule.printout()
                                 print '(', span_len, pos, ')->(', split - pos, pos, ')(', pos + span_len - split, split, ')'
-                                trace_text = '[' + rule.left + trace_1.trace_text + trace_2.trace_text + ']'
+                                if rule.left[0] == 'x':
+                                    trace_text = trace_1.trace_text + trace_2.trace_text
+                                else:
+                                    trace_text = '[' + rule.left + trace_1.trace_text + trace_2.trace_text + ']'
                                 print 'TRACE', trace_text
                                 cky.add_symbol(span_len, pos, rule.left, trace_text)
                                 cky.printout()
