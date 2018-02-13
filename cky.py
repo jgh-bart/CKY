@@ -60,23 +60,26 @@ print 'RULES'
 for rule in rules:
     rule.printout()
 
-# rewrite rules not in Chomsky Normal Form (more than 2 terms on RHS)
+# if rules not in Chomsky Normal Form (more than 2 terms on RHS), rewrite rules in CNF
+# by recursion: cnf_rewrite function returns set of rewritten rules
+def cnf_rewrite(rule, index=0):
+    if len(rule.right) <= 2:
+        return set([rule])
+    else:
+        new_symbol = 'x' + str(index)
+        rule_1 = CKY_rule(rule.left, [rule.right[0], new_symbol])
+        rule_2 = CKY_rule(new_symbol, rule.right[1:])
+        return set([rule_1]).union(cnf_rewrite(rule_2, index + 1))
+
 for rule in rules:
+    rule.printout()
     if len(rule.right) > 2:
-        idx = 0
-        while len(rule.right) > 2:
-            new_symbol = 'x' + str(idx)
-            rule_1 = CKY_rule(rule.left, [rule.right[0], new_symbol])
-            rule_2 = CKY_rule(new_symbol, rule.right[1:])
-            rules.add(rule_1)
-            rules.add(rule_2)
-            rules.remove(rule)
-            rule = rule_2
-            idx  += 1
+        rules.remove(rule)
+        rules.update(cnf_rewrite(rule))
+
 print 'RULES (C.N.F.)'
 for rule in rules:
     rule.printout()
-
 
 lexicon = {'she': ['NP'],
            'eats': ['V', 'VP'],
