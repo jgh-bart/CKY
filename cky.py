@@ -72,7 +72,6 @@ def cnf_rewrite(rule, index=0):
         return set([rule_1]).union(cnf_rewrite(rule_2, index + 1))
 
 for rule in rules:
-    rule.printout()
     if len(rule.right) > 2:
         rules.remove(rule)
         rules.update(cnf_rewrite(rule))
