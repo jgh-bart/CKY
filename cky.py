@@ -1,6 +1,6 @@
 class CKY_rule:
     # rule object, initiated with LHS symbol as string
-    # and RHS symbols as list
+    # and RHS symbols as list of strings
     def __init__(self, left, right):
         self.left  = left
         self.right = right
@@ -10,6 +10,17 @@ class CKY_rule:
             return True
         else:
             return False
+    
+    # if rule not in Chomsky Normal Form (more than 2 terms on RHS), rewrite rule in CNF
+    # by recursion: returns set of rewritten rules
+    def cnf_rewrite(self, index=0):
+        if len(self.right) <= 2:
+            return set([self])
+        else:
+            new_symbol = 'x' + str(index)
+            rule_1 = CKY_rule(self.left, [self.right[0], new_symbol])
+            rule_2 = CKY_rule(new_symbol, self.right[1:])
+            return set([rule_1]).union(rule_2.cnf_rewrite(index + 1))
     
     def printout(self):
         print self.left.ljust(3), "->", self.right
@@ -60,22 +71,11 @@ print 'RULES'
 for rule in rules:
     rule.printout()
 
-# if rules not in Chomsky Normal Form (more than 2 terms on RHS), rewrite rules in CNF
-# by recursion: cnf_rewrite function returns set of rewritten rules
-def cnf_rewrite(rule, index=0):
-    if len(rule.right) <= 2:
-        return set([rule])
-    else:
-        new_symbol = 'x' + str(index)
-        rule_1 = CKY_rule(rule.left, [rule.right[0], new_symbol])
-        rule_2 = CKY_rule(new_symbol, rule.right[1:])
-        return set([rule_1]).union(cnf_rewrite(rule_2, index + 1))
-
+# rewrite rules in Chomsky Normal Form
 for rule in rules:
     if len(rule.right) > 2:
         rules.remove(rule)
-        rules.update(cnf_rewrite(rule))
-
+        rules.update(rule.cnf_rewrite())
 print 'RULES (C.N.F.)'
 for rule in rules:
     rule.printout()
