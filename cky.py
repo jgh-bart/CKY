@@ -72,12 +72,14 @@ for rule in rules:
     rule.printout()
 
 # rewrite rules in Chomsky Normal Form
+cnf_rules = set([])
 for rule in rules:
-    if len(rule.right) > 2:
-        rules.remove(rule)
-        rules.update(rule.cnf_rewrite())
+    if len(rule.right) <= 2:
+        cnf_rules.add(rule)
+    else:
+        cnf_rules.update(rule.cnf_rewrite())
 print 'RULES (C.N.F.)'
-for rule in rules:
+for rule in cnf_rules:
     rule.printout()
 
 lexicon = {'she': ['NP'],
@@ -105,7 +107,7 @@ def cky_algorithm(sentence):
         for pos in range(sentence_len - span_len + 1):
             for split in range(pos + 1, pos + span_len):
                 #print 'LEN', span_len, ', SPAN', pos, '-', pos + span_len, ', SPLIT', split, '(', split - pos, pos, ')(', pos + span_len - split, split, ')'
-                for rule in rules:
+                for rule in cnf_rules:
                     for trace_1 in cky.cell_trace_list(split - pos, pos):
                         for trace_2 in cky.cell_trace_list(pos + span_len - split, split):
                             if rule.rule_match([trace_1.symbol, trace_2.symbol]):
