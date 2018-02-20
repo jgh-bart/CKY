@@ -37,7 +37,7 @@ class CKY_table:
             for j in range(self.len - i + 1):
                 self.table[(i,j)] = []
     
-    def cell_trace_list(self, i, j):
+    def get_cell(self, i, j):
         return self.table[(i,j)]
     
     def add_symbol(self, i, j, symbol, trace_text):
@@ -106,10 +106,9 @@ def cky_algorithm(sentence):
     for span_len in range(2, sentence_len + 1):
         for pos in range(sentence_len - span_len + 1):
             for split in range(pos + 1, pos + span_len):
-                #print 'LEN', span_len, ', SPAN', pos, '-', pos + span_len, ', SPLIT', split, '(', split - pos, pos, ')(', pos + span_len - split, split, ')'
                 for rule in cnf_rules:
-                    for trace_1 in cky.cell_trace_list(split - pos, pos):
-                        for trace_2 in cky.cell_trace_list(pos + span_len - split, split):
+                    for trace_1 in cky.get_cell(split - pos, pos):
+                        for trace_2 in cky.get_cell(pos + span_len - split, split):
                             if rule.rule_match([trace_1.symbol, trace_2.symbol]):
                                 print
                                 rule.printout()
@@ -122,7 +121,7 @@ def cky_algorithm(sentence):
                                 cky.add_symbol(span_len, pos, rule.left, trace_text)
                                 cky.printout()
     
-    return cky.cell_trace_list(sentence_len, 0)
+    return cky.get_cell(sentence_len, 0)
 
 text = 'she eats a fish with a fork'
 parses = cky_algorithm(text.split())
