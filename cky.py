@@ -1,3 +1,6 @@
+# CKY algorithm
+# https://en.wikipedia.org/wiki/CYK_algorithm
+
 class CKY_rule:
     # rule object, initiated with LHS symbol as string
     # and RHS symbols as list of strings
@@ -120,8 +123,80 @@ def cky_algorithm(sentence):
                                 print 'TRACE', trace_text
                                 cky.add_symbol(span_len, pos, rule.left, trace_text)
                                 cky.printout()
-    
     return cky.get_cell(sentence_len, 0)
+
+def parse_tree_printout(parse_string, col_width):
+    # set up empty table as nested list of empty strings,
+    # height 2x bracket levels, width no. words
+    word_count        = 0
+    bracket_level     = 0
+    max_bracket_level = 0
+    brackets          = {'[': +1, ']': -1}
+    for char in parse_string:
+        if char in brackets:
+            bracket_level += brackets[char]
+            if bracket_level > max_bracket_level:
+                max_bracket_level = bracket_level
+        elif char == ' ':
+            word_count += 1
+    parse_table = []
+    for n in range(2 * max_bracket_level):
+        parse_table.append(word_count * [''])
+    # work through parse string, left to right
+    col = 0
+    row = 0
+    idx = 1
+    while idx < len(parse_string):
+        if row < 0:
+            break
+        if parse_string[idx] in brackets:
+            # row +2 for [, row -2 for ]
+            row += 2 * brackets[parse_string[idx]]
+            # across to first col empty below current row
+            for x_row in parse_table[row:]:
+                while len(x_row[col]) > 0 and col < word_count - 1:
+                    col += 1
+            idx += 1
+        elif parse_string[idx] == ' ':
+            # word to bottom row of table, in current col
+            idx += 1
+            word = parse_string[idx:idx + parse_string[idx:].find(']')]
+            parse_table[-1][col] = word
+            # | from PoS to word, in same col
+            for pipe_row in range(row + 1, len(parse_table) - 1):
+                parse_table[pipe_row][col] = '|'
+            idx += len(word)
+        else:
+            # add symbol to current cell
+            end_idx = idx
+            while parse_string[end_idx] not in ['[', ']', ' ']:
+                end_idx += 1
+            parse_table[row][col] = parse_string[idx:end_idx]
+            idx = end_idx
+    # add tree lines to odd-numbered rows
+        for z_row in range(2 * max_bracket_level - 1):
+            if z_row % 2 == 1:
+                for z_col in range(word_count):
+                    # if symbol below and symbol above, add |
+                    if len(parse_table[z_row + 1][z_col]) > 0 and len(parse_table[z_row - 1][z_col]) > 0:
+                        parse_table[z_row][z_col] = '|'
+                    # if symbol below and no symbol above, add .
+                    elif len(parse_table[z_row + 1][z_col]) > 0:
+                        parse_table[z_row][z_col] = '-.'
+                        # - in all cols left until next symbol
+                        dash_col = z_col - 1
+                        while len(parse_table[z_row][dash_col]) == 0:
+                            parse_table[z_row][dash_col] = '-'
+                            dash_col -= 1
+    # justify each cell to col_width, and print row by row
+    for parse_row in parse_table:
+        row_string = ''
+        for item in parse_row:
+            if '-' in item:
+                row_string += item.rjust(col_width, '-')
+            else:
+                row_string += item.rjust(col_width, ' ')
+        print row_string
 
 text = 'she eats a fish with a fork'
 parses = cky_algorithm(text.split())
@@ -130,4 +205,6 @@ print
 print 'INPUT:', text
 print 'PARSES'
 for parse in parses:
+    print
     print parse.trace_text
+    parse_tree_printout(parse.trace_text, 8)
