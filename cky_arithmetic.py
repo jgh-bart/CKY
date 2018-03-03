@@ -1,6 +1,5 @@
 # CKY algorithm, adapted for arithmetic
 
-
 class CKY_rule:
     # rule object, initiated with LHS symbol as string
     # and RHS symbols as list of strings
